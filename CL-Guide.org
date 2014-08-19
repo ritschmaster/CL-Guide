@@ -9,7 +9,7 @@
 '(+ 1 2)        => (+ 1 2) ; a shorthand for QUOTE
 
 * Input/Output
-** Console output [Chapter 18: A Few FORMAT Recipes]
+** Console output [Practical Common Lisp - Chapter 18: A Few FORMAT Recipes]
 To write lines the "format"-function is the tool of choice.
 
 Syntax: (format <t or nil> <outputtext> <variables>)
@@ -34,7 +34,7 @@ stream.
 (format t "~a" (read-line *query-io*))
 #+END_SRC
 
-** File I/O [Chapter 14: Files and File I/O]
+** File I/O [Practical Common Lisp - Chapter 14: Files and File I/O]
 The simplest macro for reading and writing files is to use the
 WITH-OPEN-FILE macro.
 
@@ -57,7 +57,7 @@ Reading:
 #+END_SRC
 
 * Functions
-[Chapter 5: Functions]
+[Practical Common Lisp - Chapter 5: Functions]
 |-------+------------------------|
 | defun | defines a new function |
 |-------+------------------------|
@@ -72,7 +72,7 @@ Reading:
 (foo 4) => 4
 
 ** Optional parameters and "is a parameter a default parameter?"
-[Chapter 5: Functions - Optional Parameters]
+[Practical Common Lisp - Chapter 5: Functions - Optional Parameters]
 |-------------+---------------------------------------------------------------------------------------|
 | &optional   | parameters which the user don't have to define (but they should have a default value) |
 | -supplied-p | nil if the paramter has its default value and T if the user passed a value            |
@@ -88,7 +88,7 @@ Reading:
 (foo 1 2 4) ==> (1 2 4 T)
 
 ** Optional parameters which do not need a default value
-[Chapter 5: Functions - Optional Parameters]
+[Practical Common Lisp - Chapter 5: Functions - Optional Parameters]
 |-------+-----------------------------------------------------------------------------|
 | &rest | states that there could be more parameters but they do not have to be given |
 |-------+-----------------------------------------------------------------------------|
@@ -102,7 +102,7 @@ Reading:
 (foo "Peter" "Paul" "Mary") ==> hello:\nPeter\nPaul\nMary
 
 ** Keyword parameters
-[Chapter 5: Functions - Keyword Parameters]
+[Practical Common Lisp - Chapter 5: Functions - Keyword Parameters]
 |------+----------------------------------------------------------------------|
 | &key | defines that one or more parameters can be accessed by a special key |
 |------+----------------------------------------------------------------------|
@@ -116,7 +116,7 @@ Reading:
 (foo :apple 10 :box 20 :charlie 30) ==> (10 20 30 T)
 
 ** High order functions
-[Chapter 5: Functions - Functions As Data, a.k.a. Higher-Order Functions]
+[Practical Common Lisp - Chapter 5: Functions - Functions As Data, a.k.a. Higher-Order Functions]
 |----------------------------+---------------------------------------------------------------------------------------------------------------------------------------------|
 | high order functions       | functions are objects which can be used as parameters this means that you are able to pass a function unevaluated to another function       |
 | (function foo)             | the use of "function" returns the object of a given function                                                                                |
@@ -166,9 +166,9 @@ CL-USER> (plot #'(lambda (x) (* 2 x)) 0 10 1)
  ** **** ****** ******** ********** ************ ************** **************** ****************** ******************** NIL
 
 * Variables
-[Chapter 6: Variables]
+[Practical Common Lisp - Chapter 6: Variables]
 ** The let-macro
-[Chapter 6: Variables - Variable Basics]
+[Practical Common Lisp - Chapter 6: Variables - Variable Basics]
 |-----------------+-------------------------------------------------------------|
 | let             | generates variables for a section                           |
 | Dynamic binding | a let can shadow the value of a variable (see next example) |
@@ -186,7 +186,7 @@ CL-USER> (plot #'(lambda (x) (* 2 x)) 0 10 1)
 #+END_SRC
 
 ** Global variables
-[Chapter 6: Variables - Dynamic, a.k.a. Special, Variables]
+[Practical Common Lisp - Chapter 6: Variables - Dynamic, a.k.a. Special, Variables]
 Syntax:
   (defvar <variable-name> <value>)
   (defparameter <variable-name> <definition>)
@@ -213,11 +213,11 @@ a ==> 5
 b ==> 10
 
 ** Constants
-[Chapter 6: Variables - Constants]
+[Practical Common Lisp - Chapter 6: Variables - Constants]
 Syntax: (defconstant <variable-name> <value> [<documentation-string>])
 
 ** Closures
-[Chapter 6: Variables - Lexical Variables and Closures]
+[Practical Common Lisp - Chapter 6: Variables - Lexical Variables and Closures]
 Closures are variables that hold functions. Those functions are able
 to be already final (called with a specific value).
 
@@ -230,7 +230,7 @@ function:
 
 * Loops
 ** DOLIST
-[Chapter 7: Macros: Standard Control Constructs - DOLIST and DOTIMES]
+[Practical Common Lisp - Chapter 7: Macros: Standard Control Constructs - DOLIST and DOTIMES]
 Syntax: (dolist (var list-form) body-form*)
 
 One can break the loop by simple writing a RETURN statement.
@@ -239,13 +239,13 @@ Example:
 CL-USER> (dolist (x '(1 2 3)) (print x)) 1 2 3 NIL
 
 ** DOTIMES
-[Chapter 7: Macros: Standard Control Constructs - DOLIST and DOTIMES]
+[Practical Common Lisp - Chapter 7: Macros: Standard Control Constructs - DOLIST and DOTIMES]
 Syntax: (dotimes (var count-form) body-form*)
 
 CL-USER> (dotimes (i 4) (print i)) 0 1 2 3 NIL
 
 ** DO
-[Chapter 7: Macros: Standard Control Constructs - DO]
+[Practical Common Lisp - Chapter 7: Macros: Standard Control Constructs - DO]
 Syntax: (do (variable-definition*) (end-test-form result-form*) statement*)
 
 The variable definitions look like this: (var init-form step-form)
@@ -264,7 +264,7 @@ test: 1
 
 ** For loop
 *** Basic construct
-[Chapter 7: Macros: Standard Control Constructs - The Mighty LOOP]
+[Practical Common Lisp - Chapter 7: Macros: Standard Control Constructs - The Mighty LOOP]
 Examples:
 CL-USER> (loop for i from 0 to 10 by 1 do (format t "i: ~a~%" i))
 i: 0
@@ -292,7 +292,7 @@ CL-USER> (loop for i from 20 downto 17 by 2 do (format t "~a~%" i))
 NIL
 
 *** For functions
-[Chapter 22: LOOP for Black Belts - The Parts of a LOOP]
+[Practical Common Lisp - Chapter 22: LOOP for Black Belts - The Parts of a LOOP]
 There are several functions to use the values given by the for loop.
 
 - collect
@@ -306,7 +306,7 @@ There are several functions to use the values given by the for loop.
 (loop for i from 1 to 10 sum i) ==> 55
 
 *** Iterating over collections
-**** Lists [Chapter 22: LOOP for Black Belts - Looping Over Collections and Packages]
+**** Lists [Practical Common Lisp - Chapter 22: LOOP for Black Belts - Looping Over Collections and Packages]
 (loop for i in (list 10 20 30 40) collect i) ==> (10 20 30 40)
 
 This loop only works for lists:
@@ -315,16 +315,16 @@ This loop only works for lists:
 (loop for i on '(1 2 3 4 5) collect i)
 #+END_SRC
 
-**** Strings and vectors [Chapter 22: LOOP for Black Belts - Looping Over Collections and Packages]
+**** Strings and vectors [Practical Common Lisp - Chapter 22: LOOP for Black Belts - Looping Over Collections and Packages]
 (loop for i across "hello" collect i) ==> (#\h #\e #\l #\l #\o)
 
-**** Equals-then iteration [Chapter 22: LOOP for Black Belts - Equals-Then Iteration]
+**** Equals-then iteration [Practical Common Lisp - Chapter 22: LOOP for Black Belts - Equals-Then Iteration]
 Syntax: (loop for var = initial-value-form [then step-form] ...)
 
 Example: (loop for x = 0 then y for y = x then (+ x y) collect y) ==> (1 2 4 8 16)
 
 *** Conditional computing
-[Chapter 22: LOOP for Black Belts - Conditional Execution]
+[Practical Common Lisp - Chapter 22: LOOP for Black Belts - Conditional Execution]
 In the loop clause it is possible to use IF and similar statements to create conditions.
 
 A mega example:
@@ -356,7 +356,7 @@ A mega example:
 
 *** Further control words
 **** initially & finally
-[Chapter 22: LOOP for Black Belts - Setting Up and Tearing Down]
+[Practical Common Lisp - Chapter 22: LOOP for Black Belts - Setting Up and Tearing Down]
 With these keyword it is possible to run code before the loop has
 started or after a loop has finished.
 
@@ -365,7 +365,7 @@ started or after a loop has finished.
   finally (format t "~a" isum)) ==> 15
 
 **** return
-[Chapter 22: LOOP for Black Belts - Setting Up and Tearing Down]
+[Practical Common Lisp - Chapter 22: LOOP for Black Belts - Setting Up and Tearing Down]
 Jump out of the current loop.
 
 (loop for i in '(1 2 3 4 5) do
@@ -373,7 +373,7 @@ Jump out of the current loop.
     (return 10))) ==> 10
 
 **** return-from
-[Chapter 22: LOOP for Black Belts - Setting Up and Tearing Down]
+[Practical Common Lisp - Chapter 22: LOOP for Black Belts - Setting Up and Tearing Down]
 Jump out of a block or a named loop.
 
 (loop named outer for i in '(1 2 3 4 5) do
@@ -382,7 +382,7 @@ Jump out of a block or a named loop.
       (return-from outer j)))) ==> 13
 
 **** Always, never, thereis
-[Chapter 22: LOOP for Black Belts - Termination Tests]
+[Practical Common Lisp - Chapter 22: LOOP for Black Belts - Termination Tests]
 This words can be used to control a sequence's elements. It returns a
 boolean value related to the keyword.
 
@@ -399,7 +399,7 @@ boolean value related to the keyword.
 (loop for char across "abc123" thereis (digit-char-p char)) ==> 1
 
 * Macros
-[Chapter 7. Macros: Standard Control Constructs - WHEN and UNLESS]
+[Practical Common Lisp - Chapter 7. Macros: Standard Control Constructs - WHEN and UNLESS]
 Macros are quasi-function which are not called but expanded at the
 call point. This enables the ability to create arbitary syntax, e.g.:
 
@@ -425,13 +425,13 @@ The following two shorthands make the macro writing life a lot easier:
   `(if ,condition (progn ,@body)))
 #+END_SRC
 
-** GENSYM [Chapter 8. Macros: Defining Your Own - Plugging the Leaks]
+** GENSYM [Practical Common Lisp - Chapter 8. Macros: Defining Your Own - Plugging the Leaks]
 #+BEGIN_SRC lisp
 (format t "hello world")
 #+END_SRC
 
 * Collections
-[Chapter 11: Collections]
+[Practical Common Lisp - Chapter 11: Collections]
 ** Vectors
 *** Create a vector:
    (defparameter *x* #(1 2 3 4 5))
@@ -622,7 +622,7 @@ The following two shorthands make the macro writing life a lot easier:
 
 * CLOS
 ** Defining classes
-[Chapter 17: Object Reorientation: Classes]
+[Practical Common Lisp - Chapter 17: Object Reorientation: Classes]
 Every class is implicit deviated from the class T.
 
 #+BEGIN_SRC lisp
@@ -666,14 +666,14 @@ To make an instance of it:
 #+END_SRC
 
 ** Generic functions
-[Chapter 16: Object Reorientation: Generic Functions - Generic Functions and Methods]
+[Practical Common Lisp - Chapter 16: Object Reorientation: Generic Functions - Generic Functions and Methods]
 Generic functions allow to write functions for a paticular class.
 
 (defgeneric draw (account) ; declare the generic function with 1 parameter
   (:documentation "this prints the bank-account"))
 
 ** Implementations of generic functions
-[Chapter 16: Object Reorientation: Generic Functions - Generic Functions and Methods]
+[Practical Common Lisp - Chapter 16: Object Reorientation: Generic Functions - Generic Functions and Methods]
 That a generic function call will work there have to be concrete
 functions for a specific class type.
 
@@ -692,7 +692,7 @@ called with an object of the type "bank-account":
 #+END_SRC
 
 *** Auxiliar methods
-[Chapter 16: Object Reorientation: Generic Functions - The Standard Method Combination]
+[Practical Common Lisp - Chapter 16: Object Reorientation: Generic Functions - The Standard Method Combination]
 Within generic functions you can declare that a method can be :around,
 before or :after. The primary method is defined without an auxiliar
 specifier. Afterwards these methods can be defined.
@@ -708,7 +708,7 @@ specifier. Afterwards these methods can be defined.
 #+END_SRC
 
 ** Slot accessing
-[Chapter 17: Object Reorientation: Classes - Accessor Functions]
+[Practical Common Lisp - Chapter 17: Object Reorientation: Classes - Accessor Functions]
 
 There are three ways to access the slot values of an object:
 1. with the slot-value method
@@ -730,7 +730,7 @@ There are three ways to access the slot values of an object:
    #+END_SRC
 
 ** WITH-SLOTS and WITH-ACCESSORS
-[Chapter 17: Object Reorientation: Classes - WITH-SLOTS and WITH-ACCESSORS]
+[Practical Common Lisp - Chapter 17: Object Reorientation: Classes - WITH-SLOTS and WITH-ACCESSORS]
 
 Instead of using the SLOT-VALUE method to access every slot of an
 object there is also the way to access mutliple slot with WITH-SLOTS.
@@ -752,7 +752,7 @@ WITH-ACCESSORS works the same way. The only difference is that, like
 the name suggests, it uses the accessors instead of the slots.
 
 * Packages and symbols
-[Chapter 21: Programming in the Large: Packages and Symbols]
+[Practical Common Lisp - Chapter 21: Programming in the Large: Packages and Symbols]
 ** Create packages
 #+BEGIN_SRC lisp
 (defpackage :com.testsuite.app ; create package with this name
@@ -884,10 +884,14 @@ buildapp
 #+END_SRC
 
 * Credits
-This guide is an abstract of the book "Practical Common Lisp" written
-by Peter Seibel. All rights are reserved. The "[]" marks below to the
-headings are references to chapters of the book from which the
-information has been taken.
+This guide is at its core an abstract of the book "Practical Common
+Lisp" written by Peter Seibel. Therefore it is recommended (if you are
+new) that you read it in the first place. This document should serve
+as a quick-look-up for the things you have already learned (altough
+you could learn from it too).
+
+The "[]" marks below the headings are references to chapters of the
+book from which the information has been taken.
 
 Additionally many quite helpful things which are not described in
 Peter Seibel's book are complemented with describing external
