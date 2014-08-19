@@ -1,0 +1,897 @@
+* Syntax etc.
+|-----+-------|
+| T   | true  |
+| nil | false |
+|-----+-------|
+
+(+ 1 2)	        => 3
+(quote (+ 1 2)) => (+ 1 2) ; with QUOTE the list will be evaluated as list
+'(+ 1 2)        => (+ 1 2) ; a shorthand for QUOTE
+
+* Input/Output
+** Console output [Chapter 18: A Few FORMAT Recipes]
+To write lines the "format"-function is the tool of choice.
+
+Syntax: (format <t or nil> <outputtext> <variables>)
+
+#+BEGIN_SRC lisp :results output
+(format t "hello ~a~%~{1st val:~a; 2nd val:~a~}" "world" (list 2 1))
+; if the second parameter is a nil the output string will be the return value
+#+END_SRC
+
+#+RESULTS:
+: hello world
+: 1st val:2; 2nd val:1
+: nil
+
+** Console Input
+To read from the console the function READ-LINE or READ. The first
+parameter of must be a stream which is QUERY-IO for the console
+stream.
+
+#+BEGIN_SRC lisp
+; reads a full line and prints it immediately
+(format t "~a" (read-line *query-io*))
+#+END_SRC
+
+** File I/O [Chapter 14: Files and File I/O]
+The simplest macro for reading and writing files is to use the
+WITH-OPEN-FILE macro.
+
+Reading:
+#+BEGIN_SRC lisp
+(with-open-file (stream "/some/file/name.txt")
+  (loop
+    for line = (read-line stream nil 'eof)
+    until (eq line 'eof) do
+    (format t "~a~%" (line))))
+#+END_SRC
+
+Reading:
+#+BEGIN_SRC lisp
+(with-open-file (stream "/some/file/name.txt"
+                 :direction :output
+                 :if-exists :supersede ; this could also be :append
+                 :if-does-not-exist nil) ; this could also be :create
+  (format stream "Some text."))
+#+END_SRC
+
+* Functions
+[Chapter 5: Functions]
+|-------+------------------------|
+| defun | defines a new function |
+|-------+------------------------|
+
+** Default parameter
+#+BEGIN_SRC lisp
+(defun foo ((a 10))
+  a)
+#+END_SRC
+
+(foo) => 10
+(foo 4) => 4
+
+** Optional parameters and "is a parameter a default parameter?"
+[Chapter 5: Functions - Optional Parameters]
+|-------------+---------------------------------------------------------------------------------------|
+| &optional   | parameters which the user don't have to define (but they should have a default value) |
+| -supplied-p | nil if the paramter has its default value and T if the user passed a value            |
+|-------------+---------------------------------------------------------------------------------------|
+
+#+BEGIN_SRC lisp
+(defun foo (a b &optional (c 3 c-supplied-p)) 
+  (list a b c c-supplied-p))
+#+END_SRC
+
+(foo 1 2)   ==> (1 2 3 NIL)
+(foo 1 2 3) ==> (1 2 3 T)
+(foo 1 2 4) ==> (1 2 4 T)
+
+** Optional parameters which do not need a default value
+[Chapter 5: Functions - Optional Parameters]
+|-------+-----------------------------------------------------------------------------|
+| &rest | states that there could be more parameters but they do not have to be given |
+|-------+-----------------------------------------------------------------------------|
+
+#+BEGIN_SRC lisp
+(defun foo (&rest vals)
+  (format t "hello:~{a,~%}" vals))
+#+END_SRC
+
+(foo) ==> hello:\n
+(foo "Peter" "Paul" "Mary") ==> hello:\nPeter\nPaul\nMary
+
+** Keyword parameters
+[Chapter 5: Functions - Keyword Parameters]
+|------+----------------------------------------------------------------------|
+| &key | defines that one or more parameters can be accessed by a special key |
+|------+----------------------------------------------------------------------|
+
+#+BEGIN_SRC lisp
+; the parameter b and c have the default value 0 (list a b c c-supplied-p))
+(defun foo (&key ((:apple a)) ((:box b) 0) ((:charlie c) 0 c-supplied-p))
+  "Awesome code is here")
+#+END_SRC
+
+(foo :apple 10 :box 20 :charlie 30) ==> (10 20 30 T)
+
+** High order functions
+[Chapter 5: Functions - Functions As Data, a.k.a. Higher-Order Functions]
+|----------------------------+---------------------------------------------------------------------------------------------------------------------------------------------|
+| high order functions       | functions are objects which can be used as parameters this means that you are able to pass a function unevaluated to another function       |
+| (function foo)             | the use of "function" returns the object of a given function                                                                                |
+| #'foo                      | syntactic sugar for the use of the "function"-function                                                                                      |
+| (funcall #'foo 1 2 3)      | the "funcall"-function is used to run a function which is held in a function object with the same parameters as the function-object expects |
+| (apply #'foo (list 1 2 3)) | "apply" uses a list for the parameters instead of the single values                                                                         |
+|----------------------------+---------------------------------------------------------------------------------------------------------------------------------------------|
+
+#+BEGIN_SRC lisp
+(defun plot (fn min max step)
+  (loop for i from min to max by step do
+    (loop repeat (funcall fn i) do
+      (format t "*"))
+    (format t "~%")))
+
+(defun plot (fn min max step)
+  (loop for i from min to max by step do
+    (loop repeat (funcall fn i) do
+      (format t "*"))
+    (format t "~%")))
+#+END_SRC
+
+CL-USER> (plot #'exp 0 4 1/2)
+ ** *** ******* ************ ******************** ********************************* ****************************************************** NIL
+
+*** Lambda functions
+|------------------+-----------------------------------------------------+-----------------------------------------------------------------|
+| lambda functions | functions which aren't defined but can be evaluated | and be passed as parameters and can even be stored in variables |
+|------------------+-----------------------------------------------------+-----------------------------------------------------------------|
+
+the general syntax is:
+#+BEGIN_SRC lisp
+(lambda (<parameters>) <body>)
+#+END_SRC
+
+((lambda (x y) (+ x y)) 2 3) ==> 5
+
+#+BEGIN_SRC lisp
+(defun plot (fn min max step)
+  (loop for i from min to max by step do
+    (loop repeat (funcall fn i) do
+      (format t "*"))
+    (format t "~%")))
+#+END_SRC
+
+CL-USER> (plot #'(lambda (x) (* 2 x)) 0 10 1)
+ ** **** ****** ******** ********** ************ ************** **************** ****************** ******************** NIL
+
+* Variables
+[Chapter 6: Variables]
+** The let-macro
+[Chapter 6: Variables - Variable Basics]
+|-----------------+-------------------------------------------------------------|
+| let             | generates variables for a section                           |
+| Dynamic binding | a let can shadow the value of a variable (see next example) |
+|-----------------+-------------------------------------------------------------|
+
+#+BEGIN_SRC lisp
+(defun foo (x)
+  (format t "Parameter: ~a~%" x)      ; |<------ x is argument 
+  (let ((x 2))                        ; |
+    (format t "Outer LET: ~a~%" x)    ; | |<---- x is 2
+    (let ((x 3))                      ; | |
+      (format t "Inner LET: ~a~%" x)) ; | | |<-- x is 3
+    (format t "Outer LET: ~a~%" x))   ; | |
+  (format t "Parameter: ~a~%" x))     ; |
+#+END_SRC
+
+** Global variables
+[Chapter 6: Variables - Dynamic, a.k.a. Special, Variables]
+Syntax:
+  (defvar <variable-name> <value>)
+  (defparameter <variable-name> <definition>)
+
+** Access and changing the values
+|-----------------+---------------------------------------------------------------------|
+| (setf x 10)     | sets the variable x to the value 10                                 |
+| (incf x)        | increments the variable x by 1 and sets x to this new value         |
+| (decf x)        | decrements the variable x by 1 and sets *x to this new value        |
+| (1+ x)          | increments the variable x by 1 but doesn't set it to new this value |
+| (1- x)          | decrements the variable x by 1 but doesn't set it to new this value |
+| (rotatef a b)   | swaps the values of the variables a and b                           |
+| (shiftf a b 10) | shifts the values from the right to the left by one                 |
+|-----------------+---------------------------------------------------------------------|
+
+Example for SHIFTF:
+#+BEGIN_SRC lisp
+(defvar a 20)
+(defvar b 5)
+#+END_SRC
+
+(shiftf a b 10) ==> 20
+a ==> 5
+b ==> 10
+
+** Constants
+[Chapter 6: Variables - Constants]
+Syntax: (defconstant <variable-name> <value> [<documentation-string>])
+
+** Closures
+[Chapter 6: Variables - Lexical Variables and Closures]
+Closures are variables that hold functions. Those functions are able
+to be already final (called with a specific value).
+
+A very simple example which creates a function which only calls a
+function:
+#+BEGIN_SRC lisp
+(defparameter *square-of-2* ((lambda (x) (* x x)) 2))
+(*square-of-2*)
+#+END_SRC
+
+* Loops
+** DOLIST
+[Chapter 7: Macros: Standard Control Constructs - DOLIST and DOTIMES]
+Syntax: (dolist (var list-form) body-form*)
+
+One can break the loop by simple writing a RETURN statement.
+
+Example:
+CL-USER> (dolist (x '(1 2 3)) (print x)) 1 2 3 NIL
+
+** DOTIMES
+[Chapter 7: Macros: Standard Control Constructs - DOLIST and DOTIMES]
+Syntax: (dotimes (var count-form) body-form*)
+
+CL-USER> (dotimes (i 4) (print i)) 0 1 2 3 NIL
+
+** DO
+[Chapter 7: Macros: Standard Control Constructs - DO]
+Syntax: (do (variable-definition*) (end-test-form result-form*) statement*)
+
+The variable definitions look like this: (var init-form step-form)
+
+Example:
+#+BEGIN_SRC lisp
+(let ((test 0))
+  (setf test
+    (do ((n 10 (1- n))) ((= n 1) n)
+      (print n)))
+  (format t "~%test: ~a" test))
+
+10 9 8 7 6 5 4 3 2
+test: 1
+#+END_SRC
+
+** For loop
+*** Basic construct
+[Chapter 7: Macros: Standard Control Constructs - The Mighty LOOP]
+Examples:
+CL-USER> (loop for i from 0 to 10 by 1 do (format t "i: ~a~%" i))
+i: 0
+i: 1
+i: 2
+i: 3
+i: 4
+i: 5
+i: 6
+i: 7
+i: 8
+i: 9
+i: 10
+NIL
+
+CL-USER> (loop for i from 0 to 10 by 2 until (> i 5) do (format t "i: ~a~%" i))
+i: 0
+i: 2
+i: 4
+NIL
+
+CL-USER> (loop for i from 20 downto 17 by 2 do (format t "~a~%" i))
+20
+18
+NIL
+
+*** For functions
+[Chapter 22: LOOP for Black Belts - The Parts of a LOOP]
+There are several functions to use the values given by the for loop.
+
+- collect
+- append
+- sum
+- count
+- maximize
+- minimize
+- nconc
+
+(loop for i from 1 to 10 sum i) ==> 55
+
+*** Iterating over collections
+**** Lists [Chapter 22: LOOP for Black Belts - Looping Over Collections and Packages]
+(loop for i in (list 10 20 30 40) collect i) ==> (10 20 30 40)
+
+This loop only works for lists:
+#+BEGIN_SRC lisp
+; "on" automatically gets the cddr ((1 2 3 4 5) (2 3 4 5) (3 4 5) (4 5) (5))
+(loop for i on '(1 2 3 4 5) collect i)
+#+END_SRC
+
+**** Strings and vectors [Chapter 22: LOOP for Black Belts - Looping Over Collections and Packages]
+(loop for i across "hello" collect i) ==> (#\h #\e #\l #\l #\o)
+
+**** Equals-then iteration [Chapter 22: LOOP for Black Belts - Equals-Then Iteration]
+Syntax: (loop for var = initial-value-form [then step-form] ...)
+
+Example: (loop for x = 0 then y for y = x then (+ x y) collect y) ==> (1 2 4 8 16)
+
+*** Conditional computing
+[Chapter 22: LOOP for Black Belts - Conditional Execution]
+In the loop clause it is possible to use IF and similar statements to create conditions.
+
+A mega example:
+#+BEGIN_SRC lisp
+    (loop for i from 1 to 100
+      if (evenp i)
+        minimize i into min-even and
+        maximize i into max-even and
+        unless (zerop (mod i 4))
+          sum i into even-not-fours-total
+        end
+        and sum i into even-total
+      else
+        minimize i into min-odd and
+        maximize i into max-odd and
+        when (zerop (mod i 5))
+          sum i into fives-total
+        end
+        and sum i into odd-total
+      do (update-analysis min-even
+                          max-even
+                          min-odd
+                          max-odd
+                          even-total
+                          odd-total
+                          fives-total
+                          even-not-fours-total))
+#+END_SRC
+
+*** Further control words
+**** initially & finally
+[Chapter 22: LOOP for Black Belts - Setting Up and Tearing Down]
+With these keyword it is possible to run code before the loop has
+started or after a loop has finished.
+
+(loop for i in '(1 2 3 4 5)
+  sum i into isum
+  finally (format t "~a" isum)) ==> 15
+
+**** return
+[Chapter 22: LOOP for Black Belts - Setting Up and Tearing Down]
+Jump out of the current loop.
+
+(loop for i in '(1 2 3 4 5) do
+  (when (= i 3)
+    (return 10))) ==> 10
+
+**** return-from
+[Chapter 22: LOOP for Black Belts - Setting Up and Tearing Down]
+Jump out of a block or a named loop.
+
+(loop named outer for i in '(1 2 3 4 5) do
+  (loop for j in '(10 11 12 13 14) do
+    (when (> j 12)
+      (return-from outer j)))) ==> 13
+
+**** Always, never, thereis
+[Chapter 22: LOOP for Black Belts - Termination Tests]
+This words can be used to control a sequence's elements. It returns a
+boolean value related to the keyword.
+
+#+BEGIN_SRC lisp
+(if (loop for n in numbers always (evenp n))
+  (print "All numbers even."))
+#+END_SRC
+
+#+BEGIN_SRC lisp
+(if (loop for n in numbers never (oddp n))
+  (print "All numbers even."))
+#+END_SRC
+
+(loop for char across "abc123" thereis (digit-char-p char)) ==> 1
+
+* Macros
+[Chapter 7. Macros: Standard Control Constructs - WHEN and UNLESS]
+Macros are quasi-function which are not called but expanded at the
+call point. This enables the ability to create arbitary syntax, e.g.:
+
+(when t (format t "hello")) ==> "hello"
+
+The code to generate the WHEN statement:
+#+BEGIN_SRC lisp
+(defmacro when (condition &rest body)
+  `(if ,condition (progn ,@body)))
+#+END_SRC
+This code snippet will be expanded to the if condition at compile
+time.
+
+
+The following two shorthands make the macro writing life a lot easier:
+|---+-------------------------------------------------------------------------------------------------------------------------------------------|
+| ` | will result in expanding the expression instead of evaluating it                                                                          |
+| , | means that the expression will be inserted because it should not be inserted as is (e.g. do not insert the symbol CONDITION as CONDITION) |
+|---+-------------------------------------------------------------------------------------------------------------------------------------------|
+
+#+BEGIN_SRC lisp
+(defmacro when (condition &rest body)
+  `(if ,condition (progn ,@body)))
+#+END_SRC
+
+** GENSYM [Chapter 8. Macros: Defining Your Own - Plugging the Leaks]
+#+BEGIN_SRC lisp
+(format t "hello world")
+#+END_SRC
+
+* Collections
+[Chapter 11: Collections]
+** Vectors
+*** Create a vector:
+   (defparameter *x* #(1 2 3 4 5))
+   *x*                               ==> #(1 2 3 4 5)
+
+   (defparameter *x* (make-array 5)) 
+   *x*                               ==> #(0 0 0 0 0)
+
+*** Add and delete values at the end
+    (defparameter *x* (make-array 5))
+    (vector-push 5 *x*) ==> #(5 0 0 0 0)
+    (vector-push 3 *x*) ==> #(5 3 0 0 0)
+    (vector-pop *x*)    ==> 3
+    *x*                 ==> #(5 0 0 0 0)
+    (vector-pop *x*)    ==> 5
+    *x*                 ==> #(0 0 0 0 0)
+
+*** :initial-element
+    A vector can be given an initial element which is similiar to the 
+    POSIX C function memset().
+
+    (make-array 5 :initial-element nil) ==> #(NIL NIL NIL NIL NIL)
+
+*** :fill-pointer
+    To let a vector act like its size is dynamically increasing, you can 
+    use a fill-pointer. However, it is not completely resizeable. It is 
+    only as long as it was declared, the pointer only shows how many 
+    element are currently in the vector not how many could be in the vector.
+
+    (defparameter *x* (make-array 5 :fill-pointer 0))
+
+    (vector-push 'a *x*) ==> 0
+    *x*                  ==> #(A)
+    (vector-push 'b *x*) ==> 1
+    *x*                  ==> #(A B)
+    (vector-push 'c *x*) ==> 2
+    *x*                  ==> #(A B C)
+    (vector-pop *x*)     ==> C
+    *x*                  ==> #(A B)
+    (vector-pop *x*)     ==> B
+    *x*                  ==> #(A)
+    (vector-pop *x*)     ==> A
+    *x*                  ==> #()
+
+*** :adjustable
+    To create a vector whose size is fully dynamically you have to set 
+    :adjustable t.
+
+    (defparameter *x* (make-array 1 :fill-pointer 0 :adjustable t))
+    *x*                        ==> #()
+
+    (vector-push-extend 4 *x*)
+    *x*                        ==> #(4)
+    (vector-push-extend 5 *x*)
+    *x*                        ==> #(4 5)
+    (vector-pop *x*)           ==> 5
+    *x*                        ==> #(4)
+    (vector-pop *x*)           ==> 4
+    *x*                        ==> #()
+
+*** Get and set values of the vector
+    (defparameter *x* (vector 1 2 3))
+
+    (length *x*) ==> 3
+    (elt *x* 0)  ==> 1
+    (elt *x* 1)  ==> 2
+    (elt *x* 2)  ==> 3
+    (elt *x* 3)  ==> error
+
+    (setf (elt *x* 0) 10)
+    *x* ==> #(10 2 3)
+
+** Collection functions
+*** The standard functions
+**** COUNT
+     Removes a specific element from a collection.
+
+     (count 1 #(1 2 1 2 3 1 2 3 4)) ==> 3
+
+**** FIND
+    Finds a specific value in a collection.
+
+    (find 1 #(1 2 1 2 3 1 2 3 4))  ==> 1
+    (find 10 #(1 2 1 2 3 1 2 3 4)) ==> NIL
+
+**** POSITION
+    Gives the position of a specific value in a collection
+
+    (position 1 #(1 2 1 2 3 1 2 3 4)) ==> 0
+
+**** REMOVE
+    Deletes a specific element from a collection.
+
+    (remove 1 #(1 2 1 2 3 1 2 3 4)) ==> #(2 2 3 2 3 4)
+    (remove 1 '(1 2 1 2 3 1 2 3 4)) ==> (2 2 3 2 3 4)
+
+**** REMOVE-DUPLICATES
+     It works as the name suggests.
+
+     (remove-duplicates #(1 2 1 2 3 1 2 3 4)) ==> #(1 2 3 4)
+
+**** SUBSTITUTE
+    Substitutes a specific element from the collection with
+    another value.
+
+    (substitute 10 1 #(1 2 1 2 3 1 2 3 4)) ==> #(10 2 10 2 3 10 2 3 4)
+    (substitute 10 1 '(1 2 1 2 3 1 2 3 4)) ==> (10 2 10 2 3 10 2 3 4)
+    (substitute #\x #\b "foobarbaz")       ==> "fooxarxaz"
+
+**** CONCATENATE
+     Concatenates two sequences. If those two sequences are from a
+     different type the disered output sequence has to be given as
+     first parameter.
+     
+     (concatenate 'vector #(1 2 3) '(4 5 6))    ==> #(1 2 3 4 5 6)
+     (concatenate 'list #(1 2 3) '(4 5 6))      ==> (1 2 3 4 5 6)
+     (concatenate 'string "abc" '(#\d #\e #\f)) ==> "abcdef" 
+
+**** SUBSEQ
+     (subseq "hello" 1 3) ==> "el"
+
+*** String functions
+**** SEARCH
+    (search "world" "hello world") ==> 6
+
+*** Parameter key words
+**** :test	
+     Two-argument function used to compare item (or value extracted 
+     by :key function) to element.
+     Default: EQL
+
+**** :key
+     One-argument function to extract key value from actual sequence 
+     element. NIL means use element as is.
+     Default: NIL
+
+**** :start
+    Starting index (inclusive) of subsequence.	
+    Default: 0
+
+**** :end
+     Ending index (exclusive) of subsequence. NIL indicates end of 
+     sequence.	
+     Default: NIL
+
+**** :from-end
+     If true, the sequence will be traversed in reverse order, from 
+     end to start.     
+     Default: NIL
+
+**** :count
+     Number indicating the number of elements to remove or substitute 
+     or NIL to indicate all (REMOVE and SUBSTITUTE only).	
+     Default: NIL
+
+*** High-order function variants
+    Every function can be used with an arbitary high-order function.
+    For convenience there are already many helpful functions.
+
+    (count-if #'evenp #(1 2 3 4 5))         ==> 2
+
+    (count-if-not #'evenp #(1 2 3 4 5))     ==> 3
+
+    (position-if #'digit-char-p "abcd0001") ==> 4
+
+    (remove-if-not #'(lambda (x) (char= (elt x 0) #\f))
+      #("foo" "bar" "baz" "foom")) ==> #("foo" "foom")
+
+*** Sorting
+    There are two ways to sort a sequence. Both take a sequence and a
+    two-argument predicate and return a sorted version of the sequence.
+    1. SORT
+       This function only makes sure that the returned sequence is sorted.
+       It does not assure that the elements are kept in line.
+
+       (sort (vector "foo" "bar" "baz") #'string<) ==> #("bar" "baz" "foo")
+
+    2. STABLE-SORT
+       This function assures that the elements are kept in line after the
+       sort.
+
+*** Merging
+    The MERGE function takes two sequences and a predicate and returns a 
+    sequence produced by merging the two sequences, according to the predicate.
+
+    (merge 'vector #(1 3 5) #(2 4 6) #'<) ==> #(1 2 3 4 5 6)
+    (merge 'list #(1 3 5) #(2 4 6) #'<)   ==> (1 2 3 4 5 6)
+
+* CLOS
+** Defining classes
+[Chapter 17: Object Reorientation: Classes]
+Every class is implicit deviated from the class T.
+
+#+BEGIN_SRC lisp
+(defvar *account-numbers* 0) ; this has to be evaluated before
+
+; the class definition
+(defclass bank-account ()
+  ((customer-name
+    :initarg :customer-name
+
+    ; the customer-name has to be given
+    :initform (error "Must supply a customer name")
+
+    ; create an generic method to access the customer-name
+    :accessor customer-name
+
+    ; the documentation string for this slot
+    :documentation "Customer's name")
+  (balance
+    :initarg :balance
+    :initform 0
+    :accessor balance
+    :documentation "Current account balance")
+  (account-number
+    :initform (incf *account-numbers*)
+
+    ; create a generic method for reading the slot
+    ; there is also the keyword WRITER to allow only writing
+    :reader account-number
+    :documentation "Account number, unique within a bank.")
+  (account-type
+    :reader account-type)))
+#+END_SRC
+
+To make an instance of it:
+#+BEGIN_SRC lisp
+(defparameter *my-account* (make-instance 'bank-account
+                                          :customer-name "Richard"
+	                                  :balance 9500.23))
+
+#+END_SRC
+
+** Generic functions
+[Chapter 16: Object Reorientation: Generic Functions - Generic Functions and Methods]
+Generic functions allow to write functions for a paticular class.
+
+(defgeneric draw (account) ; declare the generic function with 1 parameter
+  (:documentation "this prints the bank-account"))
+
+** Implementations of generic functions
+[Chapter 16: Object Reorientation: Generic Functions - Generic Functions and Methods]
+That a generic function call will work there have to be concrete
+functions for a specific class type.
+
+The following function will be used if the generic functions will be
+called with an object of the type "bank-account":
+#+BEGIN_SRC lisp
+(defmethod draw ((account bank-account))
+  (format t "customer-name:~20t~a~%balance:~20t~a"
+          (customer-name account)
+          (balance account))
+
+  ; automatically call the next more general implmentation (if
+  ; bank-account is deviated from another class -> would be at least
+  ; T)
+  (call-next-method))
+#+END_SRC
+
+*** Auxiliar methods
+[Chapter 16: Object Reorientation: Generic Functions - The Standard Method Combination]
+Within generic functions you can declare that a method can be :around,
+before or :after. The primary method is defined without an auxiliar
+specifier. Afterwards these methods can be defined.
+
+#+BEGIN_SRC lisp
+(defmethod initialize-instance :after ((account bank-account) &key)
+  (let ((balance (slot-value account 'balance)))
+    (setf (slot-value account 'account-type)
+    (cond
+      ((>= balance 100000) :gold)
+      ((>= balance 50000) :silver)
+      (t :bronze)))))
+#+END_SRC
+
+** Slot accessing
+[Chapter 17: Object Reorientation: Classes - Accessor Functions]
+
+There are three ways to access the slot values of an object:
+1. with the slot-value method
+   #+BEGIN_SRC lisp
+   (slot-value *my-account* 'balance) ; read the value
+   (setf (slot-value *my-account* 'balance) 100.10) ; write the value
+   #+END_SRC
+2. with generic accessor methods
+   #+BEGIN_SRC lisp
+   (balance *my-account*) ; read the value
+   (setf (balance *my-account*) 100.10) ; write the value
+   #+END_SRC
+3. defining you own methods to access the values
+   #+BEGIN_SRC lisp
+   (defgeneric customer-name (account))
+
+   (defmethod customer-name ((account bank-account)) ; works same as 2.
+     (slot-value account 'customer-name))
+   #+END_SRC
+
+** WITH-SLOTS and WITH-ACCESSORS
+[Chapter 17: Object Reorientation: Classes - WITH-SLOTS and WITH-ACCESSORS]
+
+Instead of using the SLOT-VALUE method to access every slot of an
+object there is also the way to access mutliple slot with WITH-SLOTS.
+
+Syntax:
+(with-slots (slot*) instance-form
+  body-form*)
+
+An example:
+#+BEGIN_SRC lisp
+(defmethod merge-accounts ((account1 bank-account) (account2 bank-account))
+  (with-slots ((balance1 balance)) account1
+    (with-slots ((balance2 balance)) account2
+      (incf balance1 balance2)
+      (setf balance2 0))))
+#+END_SRC
+
+WITH-ACCESSORS works the same way. The only difference is that, like
+the name suggests, it uses the accessors instead of the slots.
+
+* Packages and symbols
+[Chapter 21: Programming in the Large: Packages and Symbols]
+** Create packages
+#+BEGIN_SRC lisp
+(defpackage :com.testsuite.app ; create package with this name
+  (:use :common-lisp)
+  (:export :save
+           :store)
+  (:import-from :com.testsuite.dblib :open-db)
+  (:shadow :create-db)
+  (:shadowing-import-from :com.testsuite.somelib :save))
+#+END_SRC
+
+|------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :use                   | Inherits (uses) this packages for this particular package.                                                                                                              |
+| :export                | Exports the given symbols to let the users of your package use this symbols without having to call the full path (e.g. instead of (com.testsuite.app:save) just (save)) |
+| :import-from           | Imports a particular symbol from another package to use this symbol without having to use its full path.                                                                |
+| :shadow                | Shadows a particular symbol from all imports to avoid name conflicts. The full path has to be used instead.                                                             |
+| :shadowing-import-from | Imports a symbol and automatically shadows all other symbols with the same name to avoid conflicts.                                                                     |
+|------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+** Writing packages
+To switch into a particular package and to extend it or to use
+automatically its symbols you have to call the function
+(in-package :name-of-your-package).
+
+There are two ways to write packages:
+1. Every package is a file
+   + All package symbols are collected in one file
+   - Package dependencies are not on one sight
+2. One file defines all packages and the package functions are
+   implemented in one or more files
+   + Package dependencies are on one sight
+   - Not all package symbols are not collected in one file
+
+* Quicklisp
+This is a package manager to install lisp libraries like "gem" in
+Ruby.
+[[http://www.quicklisp.org]]
+
+* ASDF
+** QUICKPROJECT
+With QUICKPROJECT it is possible to create a simple ASDF package.
+
+#+BEGIN_SRC lisp
+(quickproject:make-project #p"~/SimpleBank" ; the project folder
+                           :name "SimpleBank" ; the name
+                           :depends-on '(lisp-unit2)) ; needed libraries
+#+END_SRC
+
+[[http://www.xach.com/lisp/quickproject/]]
+
+* Threading
+Most LISP interpreters have specific functions to enable threads but
+the best way to use threads is to use a non-specific library like
+"Bordeaux-Threads".
+
+** BORDEAUX-THREADS
+It enables the approach of threads that is probably known from the posix threads.
+
+An example:
+#+begin_src lisp
+(ql:quickload 'bordeaux-threads)
+
+(defun thread-func ()
+  (format t "~d" (* 10 10)))
+
+(loop for i from 0 to 10 do
+  (bt:make-thread 'thread-func))
+#+end_src
+
+[[http://common-lisp.net/project/bordeaux-threads/]]
+
+** CL-STM
+This library uses the transactional approach for achieving concurrency.
+
+[[http://common-lisp.net/project/cl-stm/doc/index.html]]
+
+* Scripting
+** CL-LAUNCH
+CL-LAUNCH is an application which enables easy scripting
+implementation independent.
+
+#+begin_src lisp
+#!/usr/bin/cl-launch -E main
+(defun main (argv)
+  (format t "hello world")
+  0) ; return 0 to the operating system
+#+end_src
+
+In this is example the parameter -E tells which function to use for
+the entry point. For further more run cl-launch -h.
+
+[[http://cliki.net/cl-launch]]
+
+** SBCL
+If you use SBCL as your LISP interperter you can add the following
+line in the shebang line to use a file as script like in Ruby, Perl or
+Python: #!/usr/bin/sbcl --script
+
+To access the given arguments from the console you can use the
+variable SB-EXT:*POSIX-ARGV*.
+
+* Executables
+If you use SBCL or CCL as your LISP interpreter it is possible to use
+load a library called BUILDAPP. This facility enables easy executable
+generation with those two interpreters.
+
+To compile a file, you have to define a entry point as you see in the
+following code snippet saved in the file "main.lisp":
+#+BEGIN_SRC lisp
+(defun main (args)
+  (format t "hello world"))
+#+END_SRC
+
+Now you have to fire up the interpreter, load the library and generate
+a fancy compiler binary:
+#+BEGIN_SRC lisp
+(ql:quickload 'buildapp)
+(buildapp:build-buildapp "/path/to/bin/buildapp")
+(quit)
+#+END_SRC
+
+To compile the file:
+#+BEGIN_SRC bash
+buildapp
+  --load main.lisp     # what file to load
+  --entry 'main        # the name of the main function
+  --compress-core      # only for SBCL to compress the binary
+  --output helloworld  # the name of the binary
+#+END_SRC
+
+* Credits
+This guide is an abstract of the book "Practical Common Lisp" written
+by Peter Seibel. All rights are reserved. The "[]" marks below to the
+headings are references to chapters of the book from which the
+information has been taken.
+
+Additionally many quite helpful things which are not described in
+Peter Seibel's book are complemented with describing external
+libraries.
+
+This document has been written by Richard Bäck and is happily shared
+for all new and old Lispers.
