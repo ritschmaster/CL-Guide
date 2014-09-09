@@ -854,6 +854,40 @@ Python: #!/usr/bin/sbcl --script
 To access the given arguments from the console you can use the
 variable SB-EXT:*POSIX-ARGV*.
 
+** Use UNIX tools
+If you are familiar with Perl you proably know how easy it is to call
+other programs with Perl.
+To obtain the entire output string:
+#+BEGIN_SRC perl
+my $dir = `ls ~/`
+print $dir
+#+END_SRC
+
+To obtain the the lines of the output:
+#+BEGIN_SRC perl
+my @dir = `ls ~/`
+print @dir
+#+END_SRC
+
+To achieve the almost the same thing in Common Lisp there are some
+libraries:
+
+*** TRIVIAL-SHELL
+With this library you can simply execute programs and catch their
+output:
+
+#+BEGIN_SRC lisp
+(defvar *dir* nil)
+(setf *dir* (trivial-shell:shell-command "ls ~/"))
+(format t "~a" *dir*)
+#+END_SRC
+
+Sadly this library is not as powerful as Perl, because you will always
+receive a string. Therefore unlike as in Perl you have to split the
+string manually.
+
+[[http://common-lisp.net/project/trivial-shell/]]
+
 * Executables
 If you use SBCL or CCL as your LISP interpreter it is possible to use
 load a library called BUILDAPP. This facility enables easy executable
