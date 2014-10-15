@@ -1,25 +1,35 @@
+# Copyright (C)  2014 Richard Bäck.
+# Permission is granted to copy, distribute and/or modify this document
+# under the terms of the GNU Free Documentation License, Version 1.3 or
+# any later version published by the Free Software Foundation; with no
+# Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+# copy of the license is included in the section entitled "GNU Free
+# Documentation License".
+
 * Syntax etc.
 |-----+-------|
 | T   | true  |
 | nil | false |
 |-----+-------|
 
-(+ 1 2)	        => 3
-(quote (+ 1 2)) => (+ 1 2) ; with QUOTE the list will be evaluated as list
+(+ 1 2)	        => 3\\
+(quote (+ 1 2)) => (+ 1 2) ; with QUOTE the list will be evaluated as list\\
 '(+ 1 2)        => (+ 1 2) ; a shorthand for QUOTE
 
 * Input/Output
-** Console output [Practical Common Lisp - Chapter 18: A Few FORMAT Recipes]
-To write lines the "format"-function is the tool of choice.
+** Console output
+[Practical Common Lisp - Chapter 18: A Few FORMAT Recipes]\par
+To write lines the "format"-function is the tool of choice.\par
 
 Syntax: (format <t or nil> <outputtext> <variables>)
 
-#+BEGIN_SRC lisp :results output
-(format t "hello ~a~%~{1st val:~a; 2nd val:~a~}" "world" (list 2 1))
+#+name: format-simple-example
+#+BEGIN_SRC lisp :output
 ; if the second parameter is a nil the output string will be the return value
+(format t "hello ~a~%~{1st val:~a; 2nd val:~a~}" "world" (list 2 1))
 #+END_SRC
 
-#+RESULTS:
+#+RESULTS: format-simple-example
 : hello world
 : 1st val:2; 2nd val:1
 : nil
@@ -27,16 +37,17 @@ Syntax: (format <t or nil> <outputtext> <variables>)
 ** Console Input
 To read from the console the function READ-LINE or READ. The first
 parameter of must be a stream which is QUERY-IO for the console
-stream.
+stream.\par
 
 #+BEGIN_SRC lisp
 ; reads a full line and prints it immediately
 (format t "~a" (read-line *query-io*))
 #+END_SRC
 
-** File I/O [Practical Common Lisp - Chapter 14: Files and File I/O]
+** File I/O
+[Practical Common Lisp - Chapter 14: Files and File I/O]\par
 The simplest macro for reading and writing files is to use the
-WITH-OPEN-FILE macro.
+WITH-OPEN-FILE macro.\par
 
 Reading:
 #+BEGIN_SRC lisp
@@ -47,7 +58,7 @@ Reading:
     (format t "~a~%" (line))))
 #+END_SRC
 
-Reading:
+Writing:
 #+BEGIN_SRC lisp
 (with-open-file (stream "/some/file/name.txt"
                  :direction :output
@@ -57,7 +68,7 @@ Reading:
 #+END_SRC
 
 * Functions
-[Practical Common Lisp - Chapter 5: Functions]
+[Practical Common Lisp - Chapter 5: Functions]\par
 |-------+------------------------|
 | defun | defines a new function |
 |-------+------------------------|
@@ -420,12 +431,8 @@ The following two shorthands make the macro writing life a lot easier:
 | , | means that the expression will be inserted because it should not be inserted as is (e.g. do not insert the symbol CONDITION as CONDITION) |
 |---+-------------------------------------------------------------------------------------------------------------------------------------------|
 
-#+BEGIN_SRC lisp
-(defmacro when (condition &rest body)
-  `(if ,condition (progn ,@body)))
-#+END_SRC
-
-** GENSYM [Practical Common Lisp - Chapter 8. Macros: Defining Your Own - Plugging the Leaks]
+** GENSYM
+[Practical Common Lisp - Chapter 8. Macros: Defining Your Own - Plugging the Leaks]
 #+BEGIN_SRC lisp
 (format t "hello world")
 #+END_SRC
@@ -784,7 +791,7 @@ There are two ways to write packages:
 2. One file defines all packages and the package functions are
    implemented in one or more files
    + Package dependencies are on one sight
-   - Not all package symbols are not collected in one file
+   - Not all package symbols are collected in one file
 
 * Quicklisp
 This is a package manager to install lisp libraries like "gem" in
@@ -793,12 +800,15 @@ Ruby.
 
 * ASDF
 ** QUICKPROJECT
-With QUICKPROJECT it is possible to create a simple ASDF package.
+With QUICKPROJECT it is possible to create a simple ASDF package. It
+is very important to name the source file containing folder with lower
+case letters. The folder should be placed in the search path of
+quicklisp.
 
 #+BEGIN_SRC lisp
-(quickproject:make-project #p"~/SimpleBank" ; the project folder
-                           :name "SimpleBank" ; the name
-                           :depends-on '(lisp-unit2)) ; needed libraries
+(quickproject:make-project #p"~/quicklisp/local-projects/schoolmanager" ; the project folder
+                           :depends-on '(lisp-unit2 crane)) ; needed libraries
+(ql:quickload "schoolmanager")
 #+END_SRC
 
 [[http://www.xach.com/lisp/quickproject/]]
@@ -842,7 +852,11 @@ implementation independent.
 #+end_src
 
 In this is example the parameter -E tells which function to use for
-the entry point. For further more run cl-launch -h.
+the entry point. To use a system which has been previously installed
+with Quicklisp (e.g. using your interperter's REPL):
+#+BEGIN_SRC lisp
+#!/usr/bin/cl-launch -Q -s system1 -s system2
+#+END_SRC
 
 [[http://cliki.net/cl-launch]]
 
@@ -871,7 +885,6 @@ print @dir
 
 To achieve the almost the same thing in Common Lisp there are some
 libraries:
-
 *** TRIVIAL-SHELL
 With this library you can simply execute programs and catch their
 output:
@@ -887,6 +900,11 @@ receive a string. Therefore unlike as in Perl you have to split the
 string manually.
 
 [[http://common-lisp.net/project/trivial-shell/]]
+
+** Parsing command line arguments
+*** APPLY-ARGV
+
+[[https://github.com/pve1/apply-argv]]
 
 * Executables
 If you use SBCL or CCL as your LISP interpreter it is possible to use
@@ -917,6 +935,11 @@ buildapp
   --output helloworld  # the name of the binary
 #+END_SRC
 
+* ORM
+** Code first
+*** crane
+[[http://eudoxia0.github.io/crane/]]
+* Unit-Tests
 * Credits
 This guide is at its core an abstract of the book "Practical Common
 Lisp" written by Peter Seibel. Therefore it is recommended (if you are
