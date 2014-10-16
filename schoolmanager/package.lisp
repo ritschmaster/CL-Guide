@@ -4,13 +4,13 @@
   (:use #:cl)
   (:export :main))
 
-(defpackage #:schoolmanager-model
+(defpackage #:schoolmanager.model
   (:use #:cl))
 
-(defpackage #:schoolmanager-datalayer
+(defpackage #:schoolmanager.datalayer
   (:use #:cl))
 
-(defpackage #:schoolmanager-datalayer-import
+(defpackage #:schoolmanager.datalayer.import
   (:use #:cl
         #:split-sequence)
   (:export :import-from-csv))

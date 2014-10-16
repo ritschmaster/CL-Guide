@@ -1,4 +1,4 @@
-(in-package :schoolmanager-datalayer-import)
+(in-package :schoolmanager.datalayer.import)
 
 (defparameter *csv-delim* #\,)
 

@@ -1,4 +1,4 @@
-(in-package :schoolmanager-model)
+(in-package :schoolmanager.model)
 
 (defclass school-class ()
   ((description

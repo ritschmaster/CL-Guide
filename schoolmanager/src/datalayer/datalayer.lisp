@@ -1,1 +1,1 @@
-(in-package :schoolmanager-datalayer)
+(in-package :schoolmanager.datalayer)
