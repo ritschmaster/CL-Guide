@@ -5,10 +5,13 @@
   :author "Richard Bäck <ritschmaster1@gmail.com>"
   :license "GPLv3"
   :depends-on (#:split-sequence
-                                        ;#:apply-argv
                #:lisp-unit2
-               #:crane)
+               #:datafly
+               #:envy
+               #:mcclim)
   :components ((:file "package")
+               (:file "config"
+                      :depends-on ("package"))
                (:module "src"
                         :depends-on ("package")
                         :components
@@ -18,5 +21,25 @@
                         :components
                         ((:file "person")
                          (:file "pupil" :depends-on ("person"))
-                         (:file "school-class" :depends-on ("pupil"))))))
+                         (:file "school-class" :depends-on ("pupil"))))
+               (:module "src/datalayer"
+                        :depends-on ("src")
+                        :components
+                        ((:file "datalayer")))
+               (:module "src/datalayer/entities"
+                        :depends-on ("src/datalayer")
+                        :components
+                        ((:file "entities")
+                         (:file "person" :depends-on ("entities"))
+                         (:file "pupil" :depends-on ("person"))))
+               (:module "test/model"
+                        :depends-on ("src"))
+               (:module "test/datalayer"
+                        :depends-on ("test/model")
+                        :components
+                        ((:file "person-test")))
+               (:module "test"
+                        :depends-on ("test/model")
+                        :components
+                        ((:file "test")))))
 

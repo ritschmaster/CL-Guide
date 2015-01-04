@@ -1,7 +1,11 @@
 (in-package :schoolmanager.model)
 
 (defclass school-class ()
-  ((description
+  ((id
+    :initarg :id
+    :initform nil
+    :reader id)
+   (description
     :initarg :description
     :initform (error "Must supply a class description")
     :accessor description)

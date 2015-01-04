@@ -426,10 +426,13 @@ time.
 
 
 The following two shorthands make the macro writing life a lot easier:
-|---+-------------------------------------------------------------------------------------------------------------------------------------------|
-| ` | will result in expanding the expression instead of evaluating it                                                                          |
-| , | means that the expression will be inserted because it should not be inserted as is (e.g. do not insert the symbol CONDITION as CONDITION) |
-|---+-------------------------------------------------------------------------------------------------------------------------------------------|
+|---+-------------------------------------------------------------------|
+| ` | will result in expanding the expression instead of evaluating it  |
+|---+-------------------------------------------------------------------|
+| , | means that the expression will be evaluated because it should not |
+|   | be inserted as is (e.g. do not insert the symbol CONDITION as     |
+|   | CONDITION instead evaluate it and then insert it)                 |
+|---+-------------------------------------------------------------------|
 
 ** GENSYM
 [Practical Common Lisp - Chapter 8. Macros: Defining Your Own - Plugging the Leaks]
@@ -438,8 +441,8 @@ The following two shorthands make the macro writing life a lot easier:
 #+END_SRC
 
 * Collections
-[Practical Common Lisp - Chapter 11: Collections]
 ** Vectors
+[Practical Common Lisp - Chapter 11: Collections]
 *** Create a vector:
    (defparameter *x* #(1 2 3 4 5))
    *x*                               ==> #(1 2 3 4 5)
@@ -461,7 +464,7 @@ The following two shorthands make the macro writing life a lot easier:
     POSIX C function memset().
 
     (make-array 5 :initial-element nil) ==> #(NIL NIL NIL NIL NIL)
-
+ 
 *** :fill-pointer
     To let a vector act like its size is dynamically increasing, you can 
     use a fill-pointer. However, it is not completely resizeable. It is 
@@ -511,7 +514,57 @@ The following two shorthands make the macro writing life a lot easier:
     (setf (elt *x* 0) 10)
     *x* ==> #(10 2 3)
 
+** Lists
+[Practical Common Lisp - Chapter 12: They Called It LISP for a Reason:
+List Processing]
+
+A list is made up of list elements. Each list element is a cons
+cell. The first attribute is the element itself which is also known as
+CAR. The second element is a reference to the next cons cell in the
+list which is called CDR. CAR and CDR are also the accessor names of
+those attributes. Both are setf-able. If a cons cell is the last of
+its list, then the CDR is NIL. The function FIRST is a synonym for CAR
+and the function REST a synonym for CDR.\par
+If you use CONS for creating cons cells then you are able to assign
+CDR something else then the reference to another cons cell. These are
+called "dotted pairs".
+#+BEGIN_SRC lisp
+(cons 1 2) => (1 . 2) ; called "dotted pair"
+(cons 1 (cons 2 (cons 3 nil))) => (1 2 3) ; the last element references nil
+(list 1 2 3) => (1 2 3) ; short hand for the above instruction
+(car (list 1 2 3)) => 1
+(cdr (list 1 2 3)) => (2 3)
+#+END_SRC
+
+*** List Manipulation Functions
+| Function  | Description                                                                                                                                                                     |
+|-----------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| BUTLAST   | Returns a copy of the list, excluding the last cons cell. With an integer argument, excludes the last n cells.                                                                  |
+| NBUTLAST  | The recycling version of BUTLAST; may modify and return the argument list but has no reliable side effects.                                                                     |
+| LDIFF     | Returns a copy of a list up to a given cons cell.                                                                                                                               |
+| TAILP     | Returns true if a given object is a cons cell that's part of the structure of a list.                                                                                           |
+| LIST*     | Builds a list to hold all but the last of its arguments and then makes the last argument the CDR of the last cell in the list. In other words, a cross between LIST and APPEND. |
+| MAKE-LIST | Builds an n item list. The initial elements of the list are NIL or the value specified with the :initial-element keyword argument.                                              |
+| REVAPPEND | Combination of REVERSE and APPEND; reverses first argument as with REVERSE and then appends the second argument.                                                                |
+| NRECONC   | Recycling version of REVAPPEND; reverses first argument as if by NREVERSE and then appends the second argument. No reliable side effects.                                       |
+| CONSP     | Predicate to test whether an object is a cons cell.                                                                                                                             |
+| ATOM      | Predicate to test whether an object is not a cons cell.                                                                                                                         |
+| LISTP     | Predicate to test whether an object is either a cons cell or NIL.                                                                                                               |
+| NULL      | Predicate to test whether an object is NIL. Functionally equivalent to NOT but stylistically preferable when testing for an empty list as opposed to boolean false.             | 
+  
+*** Mapping
+You can let an arbitary function run over a dimensional list by
+using a set of MAP* functions.
+
+**** MAPCAR
+With MAPCAR you will call a function for each CAR of a list.
+
+#+BEGIN_SRC lisp
+(mapcar #'(lambda (x) (* x x)) (list 1 2 3)) => (1 4 9)
+#+END_SRC
+
 ** Collection functions
+[Practical Common Lisp - Chapter 11: Collections]
 *** The standard functions
 **** COUNT
      Removes a specific element from a collection.
@@ -903,9 +956,11 @@ string manually.
 
 ** Parsing command line arguments
 *** APPLY-ARGV
+The best example is in the README of the library itself. The only
+thing left to say is, if you use cl-launch, you can simple pass the
+ARGV argument to APPLY-ARGV.
 
 [[https://github.com/pve1/apply-argv]]
-
 * Executables
 If you use SBCL or CCL as your LISP interpreter it is possible to use
 load a library called BUILDAPP. This facility enables easy executable

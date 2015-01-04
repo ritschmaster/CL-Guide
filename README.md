@@ -11,3 +11,8 @@ you could learn from it too).
 Additionally many quite helpful things which are not described in
 Peter Seibel's book are complemented with describing external
 libraries.
+
+## A full application example (currently not even a bit full but in work)
+This guide features also a Common Lisp application. This should help
+jumping in full Lisp action instantly. Furthermore it should give some
+ideas on how you can structure and organize your code.
