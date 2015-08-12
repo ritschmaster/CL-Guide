@@ -46,7 +46,7 @@ stream.
 
 ** File I/O[fn:2] 
 The simplest macro for reading and writing files is to use the
-WITH-OPEN-FILE macro.\par
+WITH-OPEN-FILE macro.
 
 Reading:
 #+BEGIN_SRC lisp
@@ -223,14 +223,14 @@ Example for SHIFTF:
 a ==> 5
 b ==> 10
 
-** Constants[fn:11] 
-Syntax: 
+** Constants[fn:11]
+Syntax:
 #+BEGIN_SRC lisp
 (defconstant <variable-name> <value> [<documentation-string>])
 #+END_SRC
 
 [fn:11] Practical Common Lisp - Chapter 6: Variables - Constants
-** Closures[fn:12] 
+** Closures[fn:12]
 Closures are variables that hold functions. Those functions are able
 to be already final (called with a specific value).
 
@@ -243,7 +243,7 @@ function:
 
 [fn:12] Practical Common Lisp - Chapter 6: Variables - Lexical Variables and Closures
 * Loops
-** DOLIST[fn:13] 
+** DOLIST[fn:13]
 Syntax: (dolist (var list-form) body-form*)
 
 One can break the loop by simple writing a RETURN statement.
@@ -357,7 +357,7 @@ Syntax:
 
 Example: 
 #+BEGIN_SRC lisp
-CL-USER> (loop for x = 0 then y for y = x then (+ x y) collect y) 
+CL-USER> (loop repeat 5 for x = 0 then y for y = x then (+ x y) collect y) 
 (1 2 4 8 16)
 #+END_SRC
 
@@ -480,6 +480,27 @@ The following two shorthands make the macro writing life a lot easier:
 #+END_SRC
 
 [fn:27] Practical Common Lisp - Chapter 8. Macros: Defining Your Own - Plugging the Leaks
+** A practical example
+In this example you have two files: ~/test.lisp and ~/lisp.txt. In
+your program you want to write to one of them several times but this
+has to be decided during runtime. For this the following macro comes
+in pretty handy.
+
+#+BEGIN_SRC lisp
+(defmacro test (test-p &rest body)
+  "Opens a stream to a ~/test.lisp if test-p is true. Otherwise the stream points to ~/lisp.txt." 
+  `(with-open-file (stream 
+     ,(if test-p
+                 "~/test.lisp" 
+                 "~/lisp.txt") 
+     :direction :output 
+     :if-exists :append 
+     :if-does-not-exist :create)
+    ,@body))
+
+ ; The following will append the string "hello world" to the file ~/test.lisp
+(test t (format stream "hello world"))
+#+END_SRC
 * Collections
 ** Vectors[fn:28] 
 [fn:28] Practical Common Lisp - Chapter 11: Collections
@@ -571,7 +592,7 @@ CAR. The second element is a reference to the next cons cell in the
 list which is called CDR. CAR and CDR are also the accessor names of
 those attributes. Both are setf-able. If a cons cell is the last of
 its list, then the CDR is NIL. The function FIRST is a synonym for CAR
-and the function REST a synonym for CDR.\par
+and the function REST a synonym for CDR.p
 If you use CONS for creating cons cells then you are able to assign
 CDR something else then the reference to another cons cell. These are
 called "dotted pairs".
@@ -835,6 +856,11 @@ There are three ways to access the slot values of an object:
 
    (defmethod customer-name ((account bank-account)) ; works same as 2.
      (slot-value account 'customer-name))
+
+   (defgeneric (setf customer-name) (value account))
+
+   (defmethod (setf customer-name) (value (account bank-account))
+     (setf (slot-value account 'customer-name) value))
    #+END_SRC
 
 [fn:35] Practical Common Lisp - Chapter 17: Object Reorientation: Classes - Accessor Functions
@@ -942,15 +968,16 @@ There are two ways to write packages:
 
 * Quicklisp[fn:41]
 This is a package manager to install lisp libraries like "gem" in
-Ruby.
+Ruby. Setting it up is pretty easy. Please use its own install
+instructions.
 
 [fn:41] [[http://www.quicklisp.org]]
-* ASDF
 ** QUICKPROJECT[fn:42]
-With QUICKPROJECT it is possible to create a simple ASDF package. It
-is very important to name the source file containing folder with lower
-case letters. The folder should be placed in the search path of
-quicklisp.
+# <<sec:quickproject>>
+With QUICKPROJECT it is possible to create a simple ASDF package which
+can be loaded by quicklisp. It is very important to name the source
+file containing folder with lower case letters. The folder should be
+placed in the search path of quicklisp.
 
 #+BEGIN_SRC lisp
 (quickproject:make-project #p"~/quicklisp/local-projects/schoolmanager" ; the project folder
@@ -959,6 +986,20 @@ quicklisp.
 #+END_SRC
 
 [fn:42] [[http://www.xach.com/lisp/quickproject/]]
+
+** How to find systems
+If you create a project with [[sec:quickproject][Quickproject]] you will probably want to
+place it in a directory with a version control system. To have the
+benefits of an own external directory and to find the system you have
+two options:
+1. Copy the important .lisp and .asd files into the quicklisp 
+   directory (~/quicklisp/local-projects). This could be automated by
+   a Makefile but it has too many disadvantages.
+2. Simply place a symbolic link to the directory containing the .lisp 
+   and .asd files into the quicklisp directory:
+   #+BEGIN_SRC bash
+   ln -s /path/to/your/project ~/quicklisp/local-projects
+   #+END_SRC
 
 * Threading
 Most LISP interpreters have specific functions to enable threads but
@@ -1093,6 +1134,8 @@ buildapp
 For study purposes there are full featured Common Lisp applications:
 - hash-collector :: A simple password hash creator
                     (http://github.com/ritschmaster/hash-collector)
+- mailbox :: An application which simulates a mailbox
+             (https://github.com/drurowin/mailbox)
 * Credits
 This guide is at its core an abstract of the book "Practical Common
 Lisp" written by Peter Seibel. Therefore it is recommended (if you are
