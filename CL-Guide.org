@@ -1126,10 +1126,41 @@ buildapp
 #+END_SRC
 
 * ORM
-** Code first
-*** crane[fn:48]
+** crane[fn:48]
+crane is built on sqxl. That means that you have the power of an ORM
+and you can always create your own queries.
+
 [fn:48] [[http://eudoxia0.github.io/crane/]]
 * Unit-Tests
+* Web development
+** Weblocks
+*** Concepts
+In Weblocks widgets are used to create a HTML page. This means that
+Weblocks creates the wrapper for you and you can place your own
+widgets in it. The widgets work like trees. Starting point is the
+function INIT-USER-SESSION. There the developer has to give the root
+widget a value. This could be a LIST, a STRING or a WIDGET.
+*** Widget
+Widgets are specific classes for Weblocks. There is an own macro for
+it called DEFWIDGET. Each widget has one very important method:
+RENDER-PAGE-BODY. This method prints HTML code to an output
+stream.
+#+LATEX: \\
+#+BEGIN_SRC lisp
+(defwidget hello-world-widget ()
+ ((text
+   :initform (error "Must supply a text.")
+   :initarg :text
+   :reader text)))
+
+(defmethod render-widget-body ((this hello-world-widget) &key)
+  (with-html
+    (:p
+      ;; calling STR is needed by CL-WHO for foreign functions within
+      ;; the WITH-HTML macro
+      (str
+        (text this)))))
+#+END_SRC
 * Examples
 For study purposes there are full featured Common Lisp applications:
 - hash-collector :: A simple password hash creator
