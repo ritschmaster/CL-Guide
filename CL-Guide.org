@@ -944,13 +944,30 @@ languages like C++, Java or C#.
   (:shadowing-import-from :com.testsuite.somelib :save))
 #+END_SRC
 
-|------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| :use                   | Inherits (uses) this packages for this particular package.                                                                                                              |
-| :export                | Exports the given symbols to let the users of your package use this symbols without having to call the full path (e.g. instead of (com.testsuite.app:save) just (save)) |
-| :import-from           | Imports a particular symbol from another package to use this symbol without having to use its full path.                                                                |
-| :shadow                | Shadows a particular symbol from all imports to avoid name conflicts. The full path has to be used instead.                                                             |
-| :shadowing-import-from | Imports a symbol and automatically shadows all other symbols with the same name to avoid conflicts.                                                                     |
-|------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|------------------------+----------------------------------------|
+| :use                   | Inherits (uses) this packages for      |
+|                        | this particular package. If you want   |
+|                        | to use symbols of the given package,   |
+|                        | those symbols must be exported there.  |
+|------------------------+----------------------------------------|
+| :export                | Exports the given symbols to let the   |
+|                        | users of your package use this symbols |
+|                        | without having to call the full path   |
+|                        | (e.g. instead of                       |
+|                        | (com.testsuite.app:save) just (save))  |
+|------------------------+----------------------------------------|
+| :import-from           | Imports a particular symbol from       |
+|                        | another package to use this symbol     |
+|                        | without having to use its full path.   |
+|------------------------+----------------------------------------|
+| :shadow                | Shadows a particular symbol from all   |
+|                        | imports to avoid name conflicts. The   |
+|                        | full path has to be used instead.      |
+|------------------------+----------------------------------------|
+| :shadowing-import-from | Imports a symbol and automatically     |
+|                        | shadows all other symbols with the     |
+|                        | same name to avoid conflicts.          |
+|------------------------+----------------------------------------|
 
 ** Writing packages
 To switch into a particular package and to extend it or to use
@@ -959,12 +976,16 @@ automatically its symbols you have to call the function
 
 There are two ways to write packages:
 1. Every package is a file
-   + All package symbols are collected in one file
-   - Package dependencies are not on one sight
+   - The Packages' dependencies are decentralized
+   - Enforces information hiding and loose coupling
+   - Might cause troubles with not exported symbols
+   - Current state of the art
+
 2. One file defines all packages and the package functions are
    implemented in one or more files
-   + Package dependencies are on one sight
-   - Not all package symbols are collected in one file
+   - The Packages' dependencies are centralized in only one file
+   - Much easier symbol handling but abolishes loose coupling of the
+     files
 
 * Quicklisp[fn:41]
 This is a package manager to install lisp libraries like "gem" in
